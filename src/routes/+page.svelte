@@ -1,4 +1,6 @@
 <script lang="ts">
+    import { onMount } from "svelte";
+
     let command = "";
     $: currentCommand = -1;
     $: useHistory = false;
@@ -14,11 +16,18 @@
     let posts = ["post1.txt", "post2.txt"];
 
     let help =
-        "Available commands: - cat <br> - ls <br> - flipper <br> - help <br> - clear";
+        "Available commands:<br> - cat <br> - ls <br> - flipper <br> - help <br> - clear";
 
-    let key;
+    $: cursor = false;
+    $: command_line = true;
+
+    onMount(() => {
+        setInterval(() => {
+            cursor = !cursor;
+        }, 600);
+    });
+
     function key_press(event) {
-        key = event.key;
         switch (event.key) {
             case "ArrowUp":
                 if (commandHistory.length - 1 > currentCommand) {
@@ -42,9 +51,11 @@
                 }
                 commandHistory[commandHistory.length] = command;
                 let save = command;
+                command_line = false;
                 command = "";
                 output += userString + save + "<br>";
                 execute(save);
+                command_line = true;
                 break;
             default:
                 if (useHistory) {
@@ -79,7 +90,11 @@
 <svelte:window on:keydown={key_press} />
 <div id="content">
     <p>{@html output}</p>
-    <p>{userString}{command_s}</p>
+    {#if command_line}
+        <p>
+            {userString}{command_s}{#if cursor}|{/if}
+        </p>
+    {/if}
 </div>
 
 <style>
@@ -100,10 +115,5 @@
     p {
         font-family: Consolas;
         margin-right: 10px;
-    }
-
-    .horizontal {
-        display: flex;
-        max-width: 100%;
     }
 </style>
