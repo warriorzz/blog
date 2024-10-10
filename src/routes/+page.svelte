@@ -142,6 +142,7 @@
                     window.localStorage.setItem("hushlogin", "false");
                     output += "Deleted file.";
                 }
+                break;
             case "cat":
                 if (exec.split(" ").length < 2) {
                     output += "What are you trying to print? Try again.";
@@ -159,6 +160,7 @@
                 window.localStorage.setItem("user", exec.split(" ")[1]);
                 output +=
                     "Successful. Please log out and in again to change users.";
+                break;
             default:
                 output +=
                     "It seems like you tried an unknown command. Why don't you try 'help'?";
