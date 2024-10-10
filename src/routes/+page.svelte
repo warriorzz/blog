@@ -1,36 +1,74 @@
 <script lang="ts">
     import { onMount } from "svelte";
+    import { browser } from "$app/environment";
+    import { writable } from "svelte/store";
+
+    let history = writable<Array<string>>();
 
     let command = "";
     $: currentCommand = -1;
     $: useHistory = false;
-    let commandHistory = [];
     $: command_s = !useHistory
-        ? command
-        : commandHistory[commandHistory.length - 1 - currentCommand];
+        ? (command ?? "")
+        : $history[$history.length - 1 - currentCommand];
 
-    let output = "";
-
-    let userString = "bjarne@blog:~$ ";
-
-    let posts = ["post1.txt", "post2.txt"];
-
-    let help =
-        "Available commands:<br> - cat <br> - ls <br> - flipper <br> - help <br> - clear";
+    let output = "",
+        posts = 1,
+        userString = "@blog:~$ ",
+        hushLogin = false,
+        banner = "";
 
     $: cursor = false;
-    $: command_line = true;
+    $: command_line = false;
 
     onMount(() => {
         setInterval(() => {
             cursor = !cursor;
         }, 600);
+        let initialValue =
+            JSON.parse(window.localStorage.getItem("history") ?? "[]") ??
+            <Array<string>>[];
+        history.subscribe((value) =>
+            window.localStorage.setItem("history", JSON.stringify(value)),
+        );
+        history.set(initialValue);
+
+        userString = get_property("user", "bjarne") + userString;
+        hushLogin = get_property("hushlogin", "false") == "true";
+
+        finish_login();
     });
+
+    async function finish_login() {
+        banner = await fetch_text("/userdir/banner.txt");
+        if (!hushLogin) print_banner();
+        command_line = true;
+    }
+
+    function print_banner() {
+        output += banner
+            .replace("{date}", new Date())
+            .replace("{agent}", navigator.userAgent);
+        console.log("banner");
+    }
+
+    function get_property(name: string, default_s: string) {
+        return window.localStorage.getItem(name) ?? default_s;
+    }
+
+    async function fetch_text(path) {
+        let response = await fetch(path);
+        if (!response.ok) {
+            return "An error occured. Are you sure this file exists?";
+        }
+        let text = response.text();
+        return text;
+    }
 
     function key_press(event) {
         switch (event.key) {
             case "ArrowUp":
-                if (commandHistory.length - 1 > currentCommand) {
+                if ($history.length - 1 > currentCommand) {
                     useHistory = true;
                     currentCommand++;
                 }
@@ -49,17 +87,16 @@
                     output += userString + "<br>";
                     break;
                 }
-                commandHistory[commandHistory.length] = command;
                 let save = command;
+                history.set([...$history, save]);
                 command_line = false;
                 command = "";
                 output += userString + save + "<br>";
                 execute(save);
-                command_line = true;
                 break;
             default:
                 if (useHistory) {
-                    command = commandHistory[currentCommand];
+                    command = history[currentCommand];
                     useHistory = false;
                 }
                 if (event.key === "Backspace")
@@ -68,22 +105,66 @@
         }
     }
 
-    function execute(command) {
-        switch (command.split(" ")[0]) {
+    async function execute(exec: string) {
+        switch (exec.split(" ")[0]) {
             case "ls":
-                output += posts.join(" ");
+                for (let i = posts; i > 0; i--) output += "post" + i + ".txt ";
                 break;
             case "help":
+                let help = await fetch_text("/userdir/help.txt");
                 output += help;
                 break;
             case "clear":
                 output = "";
                 break;
+            case "touch":
+                if (exec.split(" ").length < 2) {
+                    output +=
+                        "What should I do now? There is nothing to do! Try again.";
+                    break;
+                }
+                if (exec.split(" ")[1] !== ".hushlogin")
+                    output +=
+                        "I am sorry, but this is my blog. Why do you want to add files??";
+                else {
+                    window.localStorage.setItem("hushlogin", "true");
+                    output += "Created file.";
+                }
+                break;
+            case "rm":
+                if (exec.split(" ").length < 2) {
+                    output += "What are you trying to delete? Try again.";
+                    break;
+                }
+                if (exec.split(" ")[1] !== ".hushlogin")
+                    output += "Missing file permissions. :(";
+                else {
+                    window.localStorage.setItem("hushlogin", "false");
+                    output += "Deleted file.";
+                }
+            case "cat":
+                if (exec.split(" ").length < 2) {
+                    output += "What are you trying to print? Try again.";
+                    break;
+                }
+                let post = await fetch_text("/posts/" + exec.split(" ")[1]);
+                output += post;
+                break;
+            case "useradd":
+                if (exec.split(" ").length < 2) {
+                    output +=
+                        "I don't know anyone without a name. Try again please.";
+                    break;
+                }
+                window.localStorage.setItem("user", exec.split(" ")[1]);
+                output +=
+                    "Successful. Please log out and in again to change users.";
             default:
                 output +=
                     "It seems like you tried an unknown command. Why don't you try 'help'?";
         }
         if (output !== "") output += "<br>";
+        command_line = true;
     }
 </script>
 

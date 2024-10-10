@@ -1,0 +1,15 @@
+Welcome to Bjarne's blog! ({agent})<br>
+<br>
+ System information as of {date}<br>
+<br>
+-  System load:              3.1415926<br>
+-  Usage of /:               0.0% of 993.78GB<br>
+-  Memory usage:             99%<br>
+-  Swap usage:               0%<br>
+-  Temperature:              69.0 C<br>
+-  Processes:                787<br>
+-  Users logged in:          0<br>
+<br>
+0 updates can be applied immediately.<br>
+<br>
+Have fun! If you haven't been here yet, you might want to type 'help' to see available commands.<br>
