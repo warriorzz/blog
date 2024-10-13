@@ -1,8 +1,0 @@
-Available commands:<br>
- - cat<br>
- - useradd <br>
- - ls <br>
- - touch <br>
- - rm <br>
- - help <br>
- - clear
