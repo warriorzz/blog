@@ -28,16 +28,18 @@ export function get_local_storage_dict_store(
 ) {
   let store = writable<Map<string, string>>();
   let initialValue =
-    JSON.parse(window.localStorage.getItem(name) ?? "{}") ?? default_value;
-  store.subscribe((value) =>
-    window.localStorage.setItem(name, JSON.stringify(value)),
-  );
+    JSON.parse(window.localStorage.getItem(name) ?? '{".settings": ""}') ??
+    default_value;
+  store.subscribe((value) => {
+    window.localStorage.setItem(name, JSON.stringify(value));
+  });
   store.set(initialValue);
   return store;
 }
 
 export async function fetch_text(path: string) {
-  let response = await fetch("/~beberhardt" + path);
+  //let response = await fetch("/~beberhardt" + path);
+  let response = await fetch(path);
   if (!response.ok) {
     return "An error occured. Are you sure this file exists?";
   }

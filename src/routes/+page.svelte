@@ -105,7 +105,7 @@
                 command_line = false;
                 command = "";
                 output += userString + save + "<br>";
-                execute(save, event);
+                execute_c(save, event);
                 break;
             default:
                 if (useHistory) {
@@ -114,14 +114,30 @@
                 }
                 if (event.key === "Backspace")
                     command = command.substring(0, command.length - 1);
-                if ((event.key + "").length == 1) command += event.key;
+                if ((event.key + "").length == 1) {
+                    command += event.key;
+                    event.preventDefault();
+                }
         }
+    }
+
+    async function execute_c(exec, event) {
+        try {
+            await execute(exec, event);
+        } catch (e) {
+            output += "Encountered an error: " + e;
+        }
+        if (output !== "") output += "<br>";
+        command_line = true;
     }
 
     async function execute(exec, event) {
         switch (exec.split(" ")[0]) {
             case "ls":
-                let files = $userfiles;
+                let files = [];
+                for (let i = 0, item; (item = $userfiles.keys().next()); i++) {
+                    files.push(file);
+                }
                 for (let i = posts; i > 0; i--)
                     files = [...files, "posts/post" + i + ".txt"];
                 files = files.sort(function (a, b) {
@@ -146,8 +162,10 @@
                 //    output +=
                 //        "I am sorry, but this is my blog. Why do you want to add files??";
                 else {
+                    let fileName = exec.split(" ")[1];
                     let files = $userfiles;
-                    files[exec.split(" ")[1]] = "";
+                    if (!files.has(fileName)) files.set(fileName, "");
+                    else console.log("file existss");
                     userfiles.set(files);
                     output += "Created file.";
                 }
@@ -186,8 +204,6 @@
                 output +=
                     "It seems like you tried an unknown command. Why don't you try 'help'?";
         }
-        if (output !== "") output += "<br>";
-        command_line = true;
     }
 </script>
 
@@ -200,6 +216,7 @@
         </p>
         <input
             bind:this={input}
+            bind:value={command}
             type="text"
             style="width: 0px; height: 0px; border: none; hover: none; outline: none;"
         />
@@ -212,7 +229,7 @@
             input.focus();
         }}
         style="position: fixed; right: 10px; bottom: 10px; height: 20px"
-        transition:fade>Open Keyboard</button
+        transition>Open Keyboard</button
     >
 {/if}
 
