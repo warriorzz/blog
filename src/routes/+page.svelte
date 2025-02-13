@@ -140,6 +140,7 @@
                 command_line = false;
                 command = "";
                 output.push({ type: "text", text: userString + save + "<br>" });
+                output = output;
                 execute_c(save, event);
                 break;
             default:
