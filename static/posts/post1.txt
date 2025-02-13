@@ -1,6 +1,6 @@
-Hey, you've made it!
+## Hey, you've made it!
 
-I haven't been able to implement all of this yet, so please bear with me while I work out all the details around this block.
+I haven't been able to implement all of this yet, so please bear with me while I work out all the details around this blo(ck)(g).
 
 I am really happy to see you here though!
 

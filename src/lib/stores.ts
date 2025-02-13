@@ -26,22 +26,32 @@ export function get_local_storage_dict_store(
   name: string,
   default_value: Map<string, string>,
 ) {
-  let store = writable<Map<string, string>>();
   let initialValue =
-    JSON.parse(window.localStorage.getItem(name) ?? '{".settings": ""}') ??
-    default_value;
+    new Map<string, string>(
+      Object.entries(JSON.parse(window.localStorage.getItem(name) ?? "{}")),
+    ) ?? default_value;
+  let store = writable<Map<string, string>>();
   store.subscribe((value) => {
-    window.localStorage.setItem(name, JSON.stringify(value));
+    if (value === undefined) return;
+    let str = "";
+    value.forEach((value, key) => {
+      str += '"' + key + '": "' + value + '",';
+    });
+    window.localStorage.setItem(
+      name,
+      "{" + str.substring(0, str.length - 1) + "}",
+    );
   });
+  //if (initialValue.size === 0) initialValue.set(".settings", "");
   store.set(initialValue);
   return store;
 }
 
 export async function fetch_text(path: string) {
-  //let response = await fetch("/~beberhardt" + path);
-  let response = await fetch(path);
+  let response = await fetch("/~beberhardt" + path);
+  //let response = await fetch(path);
   if (!response.ok) {
-    return "An error occured. Are you sure this file exists?";
+    return "error";
   }
   let text = response.text();
   return text;
