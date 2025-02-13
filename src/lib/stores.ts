@@ -34,9 +34,10 @@ export function get_local_storage_dict_store(
   store.subscribe((value) => {
     if (value === undefined) return;
     let str = "";
-    value.forEach((value, key) => {
-      str += '"' + key + '": "' + value + '",';
-    });
+    if (value.size > 0)
+      value.forEach((value, key) => {
+        str += '"' + key + '": "' + value + '",';
+      });
     window.localStorage.setItem(
       name,
       "{" + str.substring(0, str.length - 1) + "}",

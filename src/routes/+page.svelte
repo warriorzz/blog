@@ -238,13 +238,16 @@
                     });
                     break;
                 }
-                if (!$userfiles.contains(exec.split(" ")[1]))
+                if (!$userfiles.has(exec.split(" ")[1]))
                     output.push({
                         type: "text",
                         text: "Missing file permissions. :(",
                     });
                 else {
-                    userfiles.set($userfiles.remove(exec.split(" ")[1]));
+                    if ($userfiles.size > 1) {
+                        $userfiles.delete(exec.split(" ")[1]);
+                        userfiles.set($userfiles);
+                    } else userfiles.set(new Map<string, string>());
                     output.push({
                         type: "text",
                         text: "Deleted file.",
